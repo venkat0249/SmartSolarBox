@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="//code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+    <script>
+        $(document).ready(function(){
+    //connect to the socket server.
+    var socket = io.connect('https://' + document.domain + ':' + location.port);
+    var numbers_received = [];
+
+    socket.emit('subscribe',topic='boxt/topic') //will be received by flask's "@iosocket.on('subscribe')"
+
+    //receive details from server
+    socket.on('random_number', function(msg) {
+        console.log("Received number" + msg.number);
+        //maintain a list of ten numbers
+        if (numbers_received.length >= 10){
+            numbers_received.shift()
+        }               
+        numbers_received.push(msg.number);
+        numbers_string = '';
+        for (var i = 0; i < numbers_received.length; i++){
+            numbers_string = numbers_string + '<p>' + numbers_received[i].toString() + '</p>';
+        }
+        $('#log').html(numbers_string);
+        });
+		socket.on('test_number', function(msg) {
+        //alert("I am an alert box!");
+		//alert(msg);
+		});
+
+    socket.on('mqtt_message', function(msg) {
+	//alert(msg.payload);
+	var pos = document.getElementById('log');
+	//pos.innerHTML = '<p>' + msg.payload + '</p>';
+        console.log("New mqtt message: " + msg.payload);
+		//$('#log2').html('<p>hii</p>');
+        var status_obj = JSON.parse(msg.payload);
+		document.getElementById("Solar_Array_Current_val").innerHTML = status_obj.Solar_Array_Current;
+		document.getElementById("Solar_Array_Voltage_val").innerHTML = status_obj.Solar_Array_Voltage;
+		document.getElementById("Solar_Array_Power_val").innerHTML = status_obj.Solar_Array_Power;
+		document.getElementById("Battery_Current_val").innerHTML = status_obj.Battery_Current;
+		document.getElementById("Battery_Voltage_val").innerHTML = status_obj.Battery_Voltage;
+		document.getElementById("Battery_SOC_val").innerHTML = status_obj.Battery_SOC;
+		document.getElementById("Load_Current_val").innerHTML = status_obj.Load_Current;
+		document.getElementById("Load_Voltage_val").innerHTML = status_obj.Load_Voltage;
+		document.getElementById("Load_Power_val").innerHTML = status_obj.Load_Power;
+		document.getElementById("Box_Temperature_val").innerHTML = status_obj.Box_Temperature;
+    })
+	
+
+    });
+
+    </script>
+
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+  <div class="jumbotron">
+    
+    <img src="{{url_for('static', filename='solarboxlogo.png')}}" alt="Solar Box" width="180" height="120" style="float:center"/>
+	<h2>Smart Solar Box Info Portal:</h2>
+  </div>
+</div>
+    
+</div>
+
+<div class="container" id="content">
+    <div class="row">
+        <h3>Live Status:</h3>
+		
+        <div id="log">
+        </div> <!-- /#log -->
+		<div id="log2">
+        </div>
+		 <table style="width:120">
+  <tr>
+    <th>Parameter</th>
+    <th>Value</th>
+  </tr>
+  <tr>
+    <td>Solar Array Current  :</td>
+    <td><p id="Solar_Array_Current_val"></p></td>
+  </tr>
+  <tr>
+    <td>Solar Array Voltage  :</td>
+    <td><p id="Solar_Array_Voltage_val"></p></td>
+  </tr>
+    <tr>
+    <td>Solar Array Power  :</td>
+    <td><p id="Solar_Array_Power_val"></p></td>
+  </tr>
+    <tr>
+    <td>Battery Current  :</td>
+    <td><p id="Battery_Current_val"></p></td>
+  </tr>
+    <tr>
+    <td>Battery Voltage  :</td>
+    <td><p id="Battery_Voltage_val"></p></td>
+  </tr>
+    <tr>
+    <td>Battery SOC  :</td>
+    <td><p id="Battery_SOC_val"></p></td>
+  </tr>
+    <tr>
+    <td>Load Current  :</td>
+    <td><p id="Load_Current_val"></p></td>
+  </tr>
+    <tr>
+    <td>Load Voltage  :</td>
+    <td><p id="Load_Voltage_val"></p></td>
+  </tr>
+    </tr>
+    <tr>
+    <td>Load Power  :</td>
+    <td><p id="Load_Power_val"></p></td>
+  </tr>
+    <tr>
+    <td>Box Temperature  :</td>
+    <td><p id="Box_Temperature_val"></p></td>
+  </tr>
+  
+
+</table> 
+    </div>
+</div>
+
+
+</body>
+</html>
